@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChoudaryJi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./public/style.css">
+</head>
+<body>
+  <div class="w-full h-screen bg-zinc-900 text-white p-10">
+    <h3 class="text-white text-3xl mb-3 p-4">Create User</h3>
+
+    <form method="post" action="/create">
+      <input type ="text" name="firstname" placeholder="first name" class="w-1/2 h-10 bg-zinc-900 text-white text-center border-2 border-white rounded-lg m-2" required>
+      <input type ="text" name="surname" placeholder="surname" class="w-1/2 h-10 bg-zinc-900 text-white text-center border-2 border-white rounded-lg m-2" required>
+        <input type ="text" name="username" placeholder="username" class="w-1/2 h-10 bg-zinc-900 text-white text-center border-2 border-white rounded-lg m-2" required>
+        <input type ="number" name="age" placeholder="age" class="w-1/2 h-10 bg-zinc-900 text-white text-center border-2 border-white rounded-lg m-2" required>
+        <input type ="email" name="email" placeholder="email" class="w-1/2 h-10 bg-zinc-900 text-white text-center border-2 border-white rounded-lg m-2" required>
+        <input type ="password" name="npassword" placeholder="new password" class="w-1/2 h-10 bg-zinc-900 text-white text-center border-2 border-white rounded-lg m-2" required>
+        <input type ="password" name="cpassword" placeholder="confirm password" class="w-1/2 h-10 bg-zinc-900 text-white text-center border-2 border-white rounded-lg m-2" required>
+        <input class="px-5 py-2 rounded-md bg-blue-500" type="submit"  value="Create User">
+    </form>
+  </div>
+</body>
+</html>

@@ -170,6 +170,6 @@ app.post("/logout", (req, res) => {
   res.redirect("/home");
 });
 
-app.listen(process.env.PORT, () => {
+app.listen(3000, "0.0.0.0", () => {
   console.log("Server is running on port 3000");
 });

@@ -1,7 +1,14 @@
 const mongoose = require("mongoose");
 
-mongoose
-  .connect("mongodb://localhost:27017/authapp", {})
+// Configure MongoDB connection with connection pooling
+mongoose.connect("mongodb://127.0.0.1:27017/authapp", {
+    // Minimum number of connections to maintain in the pool
+    minPoolSize: 10,
+    // Maximum number of connections that can be created in the pool
+    maxPoolSize: 50,
+    // Maximum time (in milliseconds) to wait for a connection to become available
+    waitQueueTimeoutMS: 10000,
+  })
   .then(() => {
     console.log("Connected to MongoDB");
   })

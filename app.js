@@ -5,6 +5,7 @@ const Path = require("path");
 const userModel = require("./models/user.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const generateJWTSecret = require('./utils/secretGenerator');
 
 app.set("view engine", "ejs");
 
@@ -13,7 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(Path.join(__dirname, "public")));
 app.use(cookieParser());
 
-const JWT_SECRET = process.env.JWT_SECRET || "secretkey";
+const JWT_SECRET = process.env.JWT_SECRET || generateJWTSecret();
 app.get("/", (req, res) => {
   res.render("index.ejs");
 });
@@ -23,13 +24,7 @@ app.post("/create", async (req, res) => {
     const { username, email, password, confirmPassword, phone, age } = req.body;
 
     // Validate input data
-    if (
-      !username ||
-      !email ||
-      !password ||
-      !confirmPassword ||
-      !phone ||
-      !age
+    if (!username ||!email ||!password ||!confirmPassword ||!phone ||!age
     ) {
       return res.status(400).json({ error: "All fields are required." });
     }
@@ -81,9 +76,14 @@ app.post("/create", async (req, res) => {
       age: parsedAge,
     });
 
-    //after account creation keep user loged in
-    let token = jwt.sign({ email }, JWT_SECRET);
-    res.cookie("token", token);
+    //after account creation keep user logged in
+    const token = jwt.sign({ email }, JWT_SECRET);
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+      maxAge: 3600000
+    });
 
     // Respond with the created user
     res.status(201).json({
@@ -104,6 +104,56 @@ app.post("/create", async (req, res) => {
   }
 });
 
-app.listen(3000, () => {
+app.get("/login", (req, res) => {
+  res.render("login.ejs");
+});
+
+app.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Check if email and password are provided
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    // Find the user by email
+    const user = await userModel.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.password);
+    if (!isValidPassword) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    // Create and set token
+    const token = jwt.sign({ email: user.email }, JWT_SECRET);
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "Strict",
+      maxAge: 3600000
+    });
+
+    res.json({ message: "Login successful" });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ error: "An error occurred during login" });
+  }
+});
+
+app.post("/logout", (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "Strict"
+  });
+  res.redirect("/home");
+});
+
+app.listen(process.env.PORT, () => {
   console.log("Server is running on port 3000");
 });

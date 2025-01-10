@@ -5,7 +5,7 @@ const Path = require("path");
 const userModel = require("./models/user.js");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const generateJWTSecret = require('./utils/secretGenerator');
+const { generateJWTSecret, signJWT } = require("./utils/secretGenerator");
 
 app.set("view engine", "ejs");
 
@@ -24,7 +24,13 @@ app.post("/create", async (req, res) => {
     const { username, email, password, confirmPassword, phone, age } = req.body;
 
     // Validate input data
-    if (!username ||!email ||!password ||!confirmPassword ||!phone ||!age
+    if (
+      !username ||
+      !email ||
+      !password ||
+      !confirmPassword ||
+      !phone ||
+      !age
     ) {
       return res.status(400).json({ error: "All fields are required." });
     }
@@ -77,12 +83,17 @@ app.post("/create", async (req, res) => {
     });
 
     //after account creation keep user logged in
-    const token = jwt.sign({ email }, JWT_SECRET);
+    const header = {
+      alg: "HS256",
+      typ: "JWT",
+    };
+    const payload = { email };
+    const token = signJWT(header, payload, JWT_SECRET);
     res.cookie("token", token, {
       httpOnly: true,
       secure: true,
       sameSite: "Strict",
-      maxAge: 3600000
+      maxAge: 3600000,
     });
 
     // Respond with the created user
@@ -130,12 +141,17 @@ app.post("/login", async (req, res) => {
     }
 
     // Create and set token
-    const token = jwt.sign({ email: user.email }, JWT_SECRET);
+    const header = {
+      alg: "HS256",
+      typ: "JWT",
+    };
+    const payload = { email: user.email };
+    const token = signJWT(header, payload, JWT_SECRET);
     res.cookie("token", token, {
       httpOnly: true,
       secure: true,
       sameSite: "Strict",
-      maxAge: 3600000
+      maxAge: 3600000,
     });
 
     res.json({ message: "Login successful" });
@@ -149,7 +165,7 @@ app.post("/logout", (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
     secure: true,
-    sameSite: "Strict"
+    sameSite: "Strict",
   });
   res.redirect("/home");
 });

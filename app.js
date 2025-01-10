@@ -122,36 +122,23 @@ app.get("/login", (req, res) => {
 app.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    // Add debug logging
-    console.log("Login attempt - Request body:", req.body);
-    console.log("Content-Type:", req.get("Content-Type"));
+    console.log(email, password);
 
     // Check if email and password are provided
     if (!email || !password) {
-      // For form submissions, redirect back to login page with error
-      if (req.get("Content-Type") === "application/x-www-form-urlencoded") {
-        return res.redirect("/login?error=Email and password are required");
-      }
       return res.status(400).json({ error: "Email and password are required" });
     }
 
     // Find the user by email
     const user = await userModel.findOne({ email });
     if (!user) {
-      if (req.get("Content-Type") === "application/x-www-form-urlencoded") {
-        return res.redirect("/login?error=Invalid credentials");
-      }
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
     // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
-      if (req.get("Content-Type") === "application/x-www-form-urlencoded") {
-        return res.redirect("/login?error=Invalid credentials");
-      }
-      return res.status(401).json({ error: "Invalid credentials" });
+      return res.status(401).json({ error: "Invalid credentials password" });
     }
 
     // Create and set token
@@ -168,16 +155,9 @@ app.post("/login", async (req, res) => {
       maxAge: 3600000,
     });
 
-    // Handle successful login
-    if (req.get("Content-Type") === "application/x-www-form-urlencoded") {
-      return res.redirect("/");
-    }
     res.json({ message: "Login successful" });
   } catch (error) {
     console.error("Login error:", error);
-    if (req.get("Content-Type") === "application/x-www-form-urlencoded") {
-      return res.redirect("/login?error=Server error");
-    }
     res.status(500).json({ error: "An error occurred during login" });
   }
 });
